@@ -21,7 +21,7 @@ from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-SCREEN_WIDTH = 700
+SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 500
 BALL_SIZE = 30
 BRICK_SIZE = 50
@@ -102,7 +102,7 @@ class SampleListener(Leap.Listener):
     #        handType, hand.grab_strength, hand.pinch_strength, hand.palm_position[0])
             for pig in pig_list:
                 # Move the ball's center
-                pig.x = hand.palm_position[0]+270
+                pig.x = hand.palm_position[0]+275
             if hand.grab_strength >= 0.8:
                 #print "closed fist"
                 scoreTracking.handStatus = 'fist'
