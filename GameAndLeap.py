@@ -26,6 +26,7 @@ SCREEN_HEIGHT = 500
 BALL_SIZE = 30
 BRICK_SIZE = 50
 _image_library = {}
+_sound_library = {}
 ball_list = []
 brick_list = []
 pig_list = []
@@ -137,6 +138,16 @@ def get_image(path):
         image = pygame.image.load(canonicalized_path)
         _image_library[path] = image
     return image
+
+
+def play_sound(path):
+  global _sound_library
+  sound = _sound_library.get(path)
+  if sound == None:
+    canonicalized_path = path.replace('/', os.sep).replace('\\', os.sep)
+    sound = pygame.mixer.Sound(canonicalized_path)
+    _sound_library[path] = sound
+  sound.play()
 
 
 def make_ball():
@@ -271,6 +282,7 @@ def main():
              if (ball.x>pig.x and ball.x<pig.x+60 and ball.y>pig.y and ball.y<pig.y+60 and scoreTracking.handStatus=='fist'):
                  scoring.score += 10;
                  print "points scored"
+                 play_sound('chaching.wav')
 
         # Draw the bricks
         for brick in brick_list:
@@ -279,9 +291,10 @@ def main():
             if (brick.x>pig.x and brick.x<pig.x+60 and brick.y>pig.y and brick.y<pig.y+60):
                 scoring.lives -= 0.035
                 print "lost a life"
+                play_sound('brickbreak.wav')
                 if scoring.lives <= 0:
                     screen.fill(BLACK)
-                    pygame.quit()
+                    done = True
 
 
         for pig in pig_list:
