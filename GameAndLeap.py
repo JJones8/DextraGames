@@ -31,6 +31,7 @@ brick_list = []
 pig_list = []
 
 
+
 class Ball:
     """
     Class to keep track of a ball's location and vector.
@@ -60,7 +61,10 @@ class Pig:
         self.x = 0
         self.y = 0
 
-
+class scoreTracking:
+    score = 0
+    lives = 3
+    handStatus =  'open' # fist, pinch, open
 
 class SampleListener(Leap.Listener):
     finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
@@ -93,17 +97,23 @@ class SampleListener(Leap.Listener):
         # Get hands
         for hand in frame.hands:
             handType = "Left hand" if hand.is_left else "Right hand"
-            print "%s, grab strength %f, pinch strength %f, palm position: %s" % (
-            handType, hand.grab_strength, hand.pinch_strength, hand.palm_position[0])
+    #        print "%s, grab strength %f, pinch strength %f, palm position: %s" % (
+    #        handType, hand.grab_strength, hand.pinch_strength, hand.palm_position[0])
             for pig in pig_list:
                 # Move the ball's center
                 pig.x = hand.palm_position[0]+270
             if hand.grab_strength >= 0.8:
-                print "closed fist"
+                #print "closed fist"
+                scoreTracking.handStatus = 'fist'
+                print scoreTracking.handStatus
             if hand.pinch_strength >= 0.8 and hand.grab_strength <= 0.8:
-                print "good pinch"
+                #print "good pinch"
+                scoreTracking.handStatus = 'pinch'
+                print scoreTracking.handStatus
             if hand.grab_strength <= 0.2 and hand.pinch_strength <= 0.2:
-                print "open hand"
+            #    print "open hand"
+                scoreTracking.handStatus = 'open'
+                print scoreTracking.handStatus
 
 
     def state_string(self, state):
@@ -184,6 +194,9 @@ def main():
     listener = SampleListener()
     controller = Leap.Controller()
 
+    scoring = scoreTracking()
+
+
     # Have the sample listener receive events from the controller
     controller.add_listener(listener)
 
@@ -219,7 +232,6 @@ def main():
                 if chance >0:
                     ball = make_ball()
                     ball_list.append(ball)
-                    print
                 else:
                     brick = make_brick()
                     brick_list.append(brick)
@@ -242,20 +254,41 @@ def main():
         # Set the screen background
         #screen.fill(BLACK)
         screen.blit(pygame.transform.scale(get_image('Bg.png'),(SCREEN_WIDTH,SCREEN_HEIGHT)),(0,0))
+        basicfont = pygame.font.SysFont(None, 32)
+        livesText = 'Lives: %.0f' % (scoring.lives)
+        scoreText = 'Score: %.0f' % (scoring.score)
+
+        textL = basicfont.render(livesText, True, (0, 0, 0), (255, 255, 255))
+        textS = basicfont.render(scoreText, True, (0, 0, 0), (255, 255, 255))
+
+        screen.blit(textL, (0, 0))
+        screen.blit(textS, (560, 0))
 
         # Draw the balls
         for ball in ball_list:
            # pygame.image.load(os.path.join('Images', 'coin.png')) #pygame.draw.circle(screen, (255, 255, 255), [ball.x, ball.y], BALL_SIZE)
              screen.blit(pygame.transform.scale(get_image('coin.png'),(30,30)),(ball.x, ball.y))
+             if (ball.x>pig.x and ball.x<pig.x+60 and ball.y>pig.y and ball.y<pig.y+60 and scoreTracking.handStatus=='fist'):
+                 scoring.score += 10;
+                 print "points scored"
 
         # Draw the bricks
         for brick in brick_list:
             #pygame.draw.circle(screen, (255, 255, 255), [ball.x, ball.y], BALL_SIZE)
             screen.blit(pygame.transform.scale(get_image('brick.png'),(50,50)),(brick.x, brick.y))
+            if (brick.x>pig.x and brick.x<pig.x+60 and brick.y>pig.y and brick.y<pig.y+60):
+                scoring.lives -= 0.035
+                print "lost a life"
+                if scoring.lives <= 0:
+                    screen.fill(BLACK)
+                    pygame.quit()
+
 
         for pig in pig_list:
            #pygame.draw.circle(screen, (255, 255, 255), [ball.x, ball.y], BALL_SIZE)
            screen.blit(pygame.transform.scale(get_image('pig.png'),(125,100)),(pig.x, pig.y))
+
+
 
         # --- Wrap-up
         # Limit to 60 frames per second
